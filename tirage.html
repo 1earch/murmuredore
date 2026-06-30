@@ -1237,9 +1237,9 @@
         .map((w, i) => `${i + 1}. ${w.prenom} <${w.email}>`)
         .join('\n');
       const now = new Date();
-      const dataToHash = '\n--- TIMESTAMP ---\n' + now.toISOString()
-                      + '\n--- GAGNANTS ---\n' + winnersList
-                      + '--- FICHIER CSV ---\n' + rawCSVContent.trim();
+      const dataToHash = '--- TIMESTAMP ---\n' + now.toISOString() + '\n'
+                       + '--- GAGNANTS ---\n' + winnersList + '\n'
+                       + '--- FICHIER CSV ---\n' + rawCSVContent.trim();
 
       // Calcul du hash
       const encoder = new TextEncoder();
