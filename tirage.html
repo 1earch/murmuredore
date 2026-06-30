@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <!-- Code généré par IA et adapté -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tirage au sort — Murmure doré</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       VARIABLES & BASE
+    ============================================ */
+    :root {
+      --floral-white: #FFFEF5;
+      --champagne-mist: #F5E6C8;
+      --honey-bronze: #E5A835;
+      --honey-dark: #C4892A;
+      --hunter-green: #2D5A3D;
+      --shadow-grey: #2B2520;
+      --shadow-light: rgba(43, 37, 32, 0.1);
+      --shadow-medium: rgba(43, 37, 32, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--floral-white);
+      color: var(--shadow-grey);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ============================================
+       DECORATIVE BACKGROUND ELEMENTS
+    ============================================ */
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .honeycomb-bg {
+      position: absolute;
+      opacity: 0.04;
+      fill: var(--honey-bronze);
+    }
+
+    .pollen-dot {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--honey-bronze);
+      border-radius: 50%;
+      opacity: 0.15;
+    }
+
+    /* ============================================
+       HEADER
+    ============================================ */
+    .header {
+      background: linear-gradient(135deg, var(--hunter-green) 0%, #1e4030 100%);
+      padding: 2rem 1.5rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header .logo {
+      margin-bottom: 1.5rem;
+      display: inline-block;
+      background-color: var(--floral-white);
+      border-radius: 16px;
+      padding: 6px 12px;
+    }
+
+    .header .logo img {
+      height: 80px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .header h1 {
+      font-family: 'Fraunces', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--floral-white);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      margin-bottom: 0.5rem;
+    }
+
+    .header-subtitle {
+      font-family: 'Caveat', cursive;
+      font-size: 1.5rem;
+      color: var(--champagne-mist);
+      opacity: 0.9;
+    }
+
+    /* ============================================
+       MAIN CONTENT
+    ============================================ */
+    .main-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 3rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================
+       SECTION CARDS
+    ============================================ */
+    .section-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px var(--shadow-light);
+      border: 1px solid var(--champagne-mist);
+    }
+
+    .section-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--hunter-green);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ============================================
+       CSV IMPORT
+    ============================================ */
+    .csv-upload-area {
+      border: 2px dashed var(--champagne-mist);
+      border-radius: 15px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .csv-upload-area:hover {
+      border-color: var(--honey-bronze);
+      background: rgba(245, 230, 200, 0.3);
+    }
+
+    .csv-upload-area.dragover {
+      border-color: var(--honey-bronze);
+      background: rgba(229, 168, 53, 0.1);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--honey-bronze) 0%, var(--honey-dark) 100%);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(229, 168, 53, 0.4);
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(229, 168, 53, 0.5);
+    }
+
+    .csv-hint {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 1rem;
+    }
+
+    .csv-format {
+      display: inline-block;
+      background: var(--champagne-mist);
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ============================================
+       DASHBOARD
+    ============================================ */
+    .dashboard {
+      display: none;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .dashboard.visible {
+      display: grid;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, var(--champagne-mist) 0%, #f9f3e3 100%);
+      border-radius: 15px;
+      padding: 1.5rem;
+      text-align: center;
+      border: 1px solid rgba(229, 168, 53, 0.2);
+    }
+
+    .stat-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-family: 'Fraunces', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--hunter-green);
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--shadow-grey);
+      opacity: 0.8;
+    }
+
+    /* ============================================
+       PREVIEW TABLE
+    ============================================ */
+    .preview-table {
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .preview-table.visible {
+      display: block;
+    }
+
+    .preview-table h4 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 0.75rem;
+    }
+
+    .participants-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .participants-table th {
+      background: var(--champagne-mist);
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--hunter-green);
+    }
+
+    .participants-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--champagne-mist);
+    }
+
+    /* ============================================
+       DRAW BUTTON
+    ============================================ */
+    .draw-section {
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .draw-btn {
+      font-family: 'Fraunces', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      padding: 1.25rem 3rem;
+      background: linear-gradient(135deg, var(--honey-bronze) 0%, var(--honey-dark) 100%);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 25px rgba(229, 168, 53, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .draw-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .draw-btn:hover:not(:disabled)::before {
+      left: 100%;
+    }
+
+    .draw-btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 35px rgba(229, 168, 53, 0.5);
+    }
+
+    .draw-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .draw-hint {
+      font-size: 0.9rem;
+      color: #999;
+      margin-top: 0.75rem;
+      font-style: italic;
+    }
+
+    /* ============================================
+       WINNERS DISPLAY
+    ============================================ */
+    .winners-section {
+      display: none;
+      margin-top: 2rem;
+    }
+
+    .winners-section.visible {
+      display: block;
+    }
+
+    .winners-title {
+      font-family: 'Caveat', cursive;
+      font-size: 2rem;
+      text-align: center;
+      color: var(--hunter-green);
+      margin-bottom: 2rem;
+    }
+
+    .winners-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .winner-card {
+      background: linear-gradient(135deg, var(--champagne-mist) 0%, #fdf8ed 100%);
+      border: 3px solid var(--honey-bronze);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      animation: slideInBounce 0.6s ease-out forwards;
+      opacity: 0;
+      transform: translateY(50px);
+    }
+
+    .winner-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'%3E%3Cpath fill='%23E5A835' fill-opacity='0.05' d='M30 0L37.5 7.5L30 15L22.5 7.5Z M60 26L67.5 33.5L60 41L52.5 33.5Z M30 52L37.5 44.5L30 37L22.5 44.5Z M0 26L7.5 33.5L0 41L-7.5 33.5Z'/%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+
+    .winner-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes slideInBounce {
+      0% { opacity: 0; transform: translateY(50px) scale(0.9); }
+      60% { transform: translateY(-10px) scale(1.02); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .winner-badge {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+      animation: popIn 0.4s ease-out 0.3s forwards;
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0); }
+      70% { transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .winner-name {
+      font-family: 'Fraunces', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--hunter-green);
+      margin-bottom: 0.5rem;
+    }
+
+    .winner-email {
+      font-size: 0.95rem;
+      color: var(--shadow-grey);
+      opacity: 0.8;
+      background: rgba(255,255,255,0.5);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    .winner-tickets {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.75rem;
+    }
+
+    /* ============================================
+       PROOF SECTION
+    ============================================ */
+
+    .proof-section {
+      margin-top: 2.5rem;
+      padding: 1.5rem;
+      background: var(--hunter-green);
+      border-radius: 15px;
+      border: 3px solid var(--hunter-green);
+      text-align: center;
+    }
+
+    .proof-section #proofTitle {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--champagne-mist);
+    }
+
+    .proof-section #proofHash {
+      font-family: monospace;
+      font-size: 1.2rem;
+      word-break: break-all;
+      letter-spacing:0.5px;
+      font-weight:600;
+      color: var(--floral-white);
+      text-shadow:0 0 8px var(--honey-bronze);
+    }
+
+    /* ============================================
+       RESET BUTTON
+    ============================================ */
+    .reset-section {
+      text-align: center;
+      margin-top: 2rem;
+      display: none;
+    }
+
+    .reset-section.visible {
+      display: block;
+    }
+
+    .reset-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.75rem 2rem;
+      background: white;
+      color: var(--hunter-green);
+      border: 2px solid var(--hunter-green);
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .reset-btn:hover {
+      background: var(--hunter-green);
+      color: white;
+    }
+
+    /* ============================================
+       ANIMATION OVERLAY
+    ============================================ */
+    .animation-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(43, 37, 32, 0.95);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .animation-overlay.active {
+      display: flex;
+    }
+
+    .anim-phase {
+      text-align: center;
+      color: white;
+    }
+
+    /* Phase 2: Spin */
+    .phase-spin {
+      display: none;
+    }
+
+    .phase-spin.active {
+      display: block;
+    }
+
+    .honeycomb-anim {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hexagon {
+      fill: none;
+      stroke: var(--honey-bronze);
+      stroke-width: 2;
+      animation: pulseHex 1s ease-in-out infinite;
+    }
+
+    @keyframes pulseHex {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+
+    .spin-wheel {
+      width: 180px;
+      height: 180px;
+      position: relative;
+      animation: spinWheel 2s linear infinite;
+    }
+
+    @keyframes spinWheel {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .spin-wheel-inner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem;
+    }
+
+    .slot-machine {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      color: var(--honey-bronze);
+      margin-top: 2rem;
+      height: 2rem;
+      overflow: hidden;
+    }
+
+    .slot-name {
+      animation: flicker 0.5s linear infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Phase 3: Winner reveal */
+    .phase-reveal {
+      display: none;
+    }
+
+    .phase-reveal.active {
+      display: block;
+    }
+
+    .reveal-content {
+      text-align: center;
+    }
+
+    .reveal-title {
+      font-family: 'Caveat', cursive;
+      font-size: 2rem;
+      color: var(--honey-bronze);
+      margin-bottom: 1rem;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .reveal-winner {
+      font-family: 'Fraunces', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: white;
+      animation: bounceIn 0.6s ease-out;
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.1); }
+      70% { transform: scale(0.95); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .reveal-email {
+      font-size: 1.2rem;
+      color: var(--champagne-mist);
+      margin-top: 0.5rem;
+      opacity: 0.8;
+    }
+
+    .particles-burst {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: burstOut 1s ease-out forwards;
+    }
+
+    @keyframes burstOut {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+
+    /* ============================================
+       ERROR MESSAGE
+    ============================================ */
+    .error-msg {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+      display: none;
+      border: 1px solid #fecaca;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    /* ============================================
+       RESPONSIVE
+    ============================================ */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .header-subtitle {
+        font-size: 1.2rem;
+      }
+
+      .section-card {
+        padding: 1.5rem;
+      }
+
+      .draw-btn {
+        font-size: 1.1rem;
+        padding: 1rem 2rem;
+      }
+
+      .winners-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .winner-card {
+        padding: 1.5rem;
+      }
+
+      .winner-name {
+        font-size: 1.5rem;
+      }
+
+      .reveal-winner {
+        font-size: 2rem;
+      }
+    }
+
+    /* ============================================
+       SCROLLBAR STYLING
+    ============================================ */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--champagne-mist);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--honey-bronze);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================
+       DECORATIVE BACKGROUND
+  ============================================ -->
+  <div class="bg-pattern" id="bgPattern"></div>
+
+  <!-- ============================================
+       HEADER
+  ============================================ -->
+  <header class="header">
+    <div class="logo">
+      <img src="logo.png" alt="Logo Murmure doré"/>
+    </div>
+    <h1>Tirage au sort</h1>
+    <p class="header-subtitle">Live Instagram du 3 juillet 2026</p>
+  </header>
+
+  <!-- ============================================
+       MAIN CONTENT
+  ============================================ -->
+  <main class="main-content">
+    <!-- Section Import CSV -->
+    <section class="section-card">
+      <h2 class="section-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        Import des participants
+      </h2>
+      <div class="csv-upload-area" id="uploadArea">
+        <input type="file" accept=".csv,.txt" class="file-input" id="fileInput">
+        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Charger un fichier CSV
+        </button>
+        <p class="csv-hint">Format attendu :</p>
+        <code class="csv-format">email,prénom,tickets</code>
+      </div>
+      <div class="error-msg" id="csvError"></div>
+
+      <!-- Dashboard -->
+      <div class="dashboard" id="dashboard">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="uniqueCount">0</div>
+          <div class="stat-label">Participants</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎫</div>
+          <div class="stat-value" id="totalTickets">0</div>
+          <div class="stat-label">Tickets en jeu</div>
+        </div>
+      </div>
+
+      <!-- Preview Table -->
+      <div class="preview-table" id="previewTable">
+        <h4>Aperçu des participants</h4>
+        <table class="participants-table">
+          <thead>
+            <tr>
+              <th>Prénom</th>
+              <th>Email</th>
+              <th>Tickets</th>
+            </tr>
+          </thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section Tirage -->
+    <section class="draw-section">
+      <button class="draw-btn" id="drawBtn" disabled>
+        🐝 Lancer le Tirage
+      </button>
+      <p class="draw-hint" id="drawHint">Importez d'abord un fichier CSV</p>
+    </section>
+
+    <!-- Section Résultats -->
+    <section class="winners-section" id="winnersSection">
+      <h2 class="winners-title">✨ Et les gagnants sont... ✨</h2>
+      <div class="winners-grid" id="winnersGrid"></div>
+      <div class="proof-section" id="proof-section">
+        <p id="proofTitle">🔒 Empreinte de vérification (SHA-256) 🔒</p>
+        <p id="proofHash">... calculé lors du tirage ...</p>
+      </div>
+      <div class="reset-section" id="resetSection">
+        <button class="reset-btn" id="resetBtn">✨ Nouveau tirage</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================
+       ANIMATION OVERLAY
+  ============================================ -->
+  <div class="animation-overlay" id="animationOverlay">
+    <!-- Phase 1: Spin -->
+    <div class="anim-phase phase-spin" id="phaseSpin">
+      <div class="spin-wheel">
+        <svg viewBox="0 0 180 180">
+          <polygon points="90,10 160,50 160,130 90,170 20,130 20,50" fill="none" stroke="#E5A835" stroke-width="4"/>
+          <polygon points="90,25 145,55 145,125 90,155 35,125 35,55" fill="none" stroke="#F5E6C8" stroke-width="2"/>
+          <polygon points="90,40 130,60 130,120 90,140 50,120 50,60" fill="none" stroke="#E5A835" stroke-width="1"/>
+        </svg>
+        <span class="spin-wheel-inner"></span>
+      </div>
+      <div class="slot-machine">
+        <span class="slot-name" id="slotName">Tirage en cours...</span>
+      </div>
+      <svg class="honeycomb-anim" width="200" height="180" viewBox="0 0 200 180">
+        <polygon class="hexagon" points="100,10 150,35 150,85 100,110 50,85 50,35" style="animation-delay: 0s"/>
+        <polygon class="hexagon" points="50,55 85,72.5 85,107.5 50,125 15,107.5 15,72.5" style="animation-delay: 0.2s"/>
+        <polygon class="hexagon" points="150,55 185,72.5 185,107.5 150,125 115,107.5 115,72.5" style="animation-delay: 0.4s"/>
+      </svg>
+    </div>
+
+    <!-- Phase 2: Reveal -->
+    <div class="anim-phase phase-reveal" id="phaseReveal">
+      <div class="particles-burst" id="particlesBurst"></div>
+      <div class="reveal-content">
+        <p class="reveal-title" id="revealTitle">🥇 Premier gagnant</p>
+        <p class="reveal-winner" id="revealWinner">Loading...</p>
+        <p class="reveal-email" id="revealEmail"></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================
+       JAVASCRIPT
+  ============================================ -->
+  <script>
+    // ============================================
+    // VARIABLES GLOBALES
+    // ============================================
+    const MAX_TICKETS = 4;
+    let participants = [];
+    let winners = [];
+    let rawCSVContent = '';
+
+    // ============================================
+    // GÉNÉRATEUR ALÉATOIRE SÉCURISÉ
+    // Utilise l'API Web Crypto pour garantir
+    // un aléa de qualité cryptographique
+    // ============================================
+    function getSecureRandom(max) {
+      const array = new Uint32Array(1);
+      crypto.getRandomValues(array);
+      return array[0] % max;
+    }
+
+    // ============================================
+    // MÉLANGE FISHER-YATES SÉCURISÉ
+    // Non utilisée (conservée pour référence) —
+    // le tirage se fait désormais par index direct
+    // via getSecureRandom
+    // ============================================
+    function fisherYatesShuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = getSecureRandom(i + 1);
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // ============================================
+    // FONCTION PRINCIPALE DE TIRAGE
+    // - Pondération selon le nombre de tickets
+    // - Tirage sans remise (un participant ne peut
+    //   gagner qu'une seule fois)
+    // ============================================
+    function tirerGagnants(participants, nombreGagnants) {
+      // Construire le tableau pondéré
+      // Chaque participant apparaît autant de fois
+      // que son nombre de tickets
+      let tableau = [];
+      for (const p of participants) {
+        for (let i = 0; i < p.tickets; i++) {
+          tableau.push(p);
+        }
+      }
+
+      const gagnants = [];
+
+      for (let i = 0; i < nombreGagnants; i++) {
+        // Tirer un index aléatoire sécurisé directement
+        const j = getSecureRandom(tableau.length);
+        const gagnant = tableau[j];
+        gagnants.push(gagnant);
+        // Retirer TOUTES les occurrences du gagnant
+        tableau = tableau.filter(p => p.email !== gagnant.email);
+      }
+
+      return gagnants;
+    }
+
+    // ============================================
+    // MASQUAGE D'EMAIL
+    // Affiche les 3 premiers caractères + ***
+    // ============================================
+    function masquerEmail(email) {
+      const parts = email.split('@');
+      if (parts.length !== 2) return email;
+      const local = parts[0];
+      const masked = local.substring(0, 3) + '*******';
+      return masked + '@' + parts[1];
+    }
+
+    // ============================================
+    // GÉNÉRATION DU FOND DÉCORATIF
+    // Crée les hexagones et points de pollen
+    // ============================================
+    function generateBackground() {
+      const bg = document.getElementById('bgPattern');
+      
+      // Honeycombs
+      for (let i = 0; i < 15; i++) {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'honeycomb-bg');
+        svg.setAttribute('width', '80');
+        svg.setAttribute('height', '70');
+        svg.setAttribute('viewBox', '0 0 80 70');
+        svg.style.left = Math.random() * 100 + '%';
+        svg.style.top = Math.random() * 100 + '%';
+        svg.style.transform = `rotate(${Math.random() * 30}deg)`;
+        svg.innerHTML = '<polygon points="40,5 70,22.5 70,57.5 40,75 10,57.5 10,22.5" fill="currentColor"/>';
+        bg.appendChild(svg);
+      }
+
+      // Pollen dots
+      for (let i = 0; i < 40; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'pollen-dot';
+        dot.style.left = Math.random() * 100 + '%';
+        dot.style.top = Math.random() * 100 + '%';
+        bg.appendChild(dot);
+      }
+    }
+
+    // ============================================
+    // PARSING CSV
+    // Gère les séparateurs , et ;
+    // Ignore la ligne d'en-tête
+    // ============================================
+    function parseCSV(content) {
+      const lines = content.trim().split(/\r?\n/);
+      if (lines.length === 0) return [];
+
+      // Détecter le séparateur
+      const firstLine = lines[0];
+      const separator = firstLine.includes(';') ? ';' : ',';
+
+      // Vérifier si la première ligne est un header
+      const isHeader = /email|prénom|prenom|tickets/i.test(firstLine);
+      const startIndex = isHeader ? 1 : 0;
+
+      const parsed = [];
+      const seenEmails = new Set();
+      for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const parts = line.split(separator).map(p => p.trim());
+        if (parts.length < 3) continue;
+
+        const email = parts[0];
+        const prenom = parts[1];
+        const tickets = parseInt(parts[2], 10);
+
+        // Validation
+        if (!email || !prenom || isNaN(tickets) || tickets < 1) continue;
+
+        // Alerte si dépassement du plafond de tickets
+        if (tickets > MAX_TICKETS) {
+          alert("Attention : le participant " + email + " dépasse le plafond de " + MAX_TICKETS + " tickets (valeur lue : " + tickets + "). Cette ligne est ignorée.");
+          continue;
+        }
+
+        // Détection d'email en doublon (normalisé : trim + lowercase)
+        const emailKey = email.trim().toLowerCase();
+        if (seenEmails.has(emailKey)) {
+          alert("Attention : email en doublon détecté : " + email + ". Seule la première occurrence est conservée.");
+          continue;
+        }
+        seenEmails.add(emailKey);
+
+        parsed.push({ email, prenom, tickets });
+      }
+
+      return parsed;
+    }
+
+    // ============================================
+    // GESTION DE L'IMPORT CSV
+    // ============================================
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const csvError = document.getElementById('csvError');
+
+    // Drag & drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+
+    // Click
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+
+    function handleFile(file) {
+      csvError.classList.remove('visible');
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result;
+        rawCSVContent = content;
+        participants = parseCSV(content);
+
+        if (participants.length === 0) {
+          csvError.textContent = 'Fichier invalide ou vide. Assurez-vous que le format est : email,prénom,tickets';
+          csvError.classList.add('visible');
+          return;
+        }
+
+        updateDashboard();
+        updatePreview();
+        enableDraw();
+      };
+      reader.readAsText(file);
+    }
+
+    // ============================================
+    // MISE À JOUR DU DASHBOARD
+    // ============================================
+    function updateDashboard() {
+      const uniqueCount = participants.length;
+      const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0);
+
+      document.getElementById('uniqueCount').textContent = uniqueCount;
+      document.getElementById('totalTickets').textContent = totalTickets;
+
+      document.getElementById('dashboard').classList.add('visible');
+    }
+
+    // ============================================
+    // MISE À JOUR DE L'APERÇU
+    // ============================================
+    function updatePreview() {
+      const previewBody = document.getElementById('previewBody');
+      const previewTable = document.getElementById('previewTable');
+      
+      previewBody.innerHTML = '';
+      
+      const maxShow = 5;
+      const toShow = participants.slice(0, maxShow);
+      
+      toShow.forEach(p => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${p.prenom}</td>
+          <td>${masquerEmail(p.email)}</td>
+          <td>${p.tickets}</td>
+        `;
+        previewBody.appendChild(row);
+      });
+
+      if (participants.length > maxShow) {
+        const moreRow = document.createElement('tr');
+        moreRow.innerHTML = `<td colspan="3" style="text-align: center; font-style: italic; color: #888;">... et ${participants.length - maxShow} autres participants</td>`;
+        previewBody.appendChild(moreRow);
+      }
+
+      previewTable.classList.add('visible');
+    }
+
+    // ============================================
+    // ACTIVATION DU BOUTON TIRAGE
+    // ============================================
+    function enableDraw() {
+      const drawBtn = document.getElementById('drawBtn');
+      const drawHint = document.getElementById('drawHint');
+      
+      drawBtn.disabled = false;
+      drawHint.textContent = '';
+
+      // Scroll vers le bouton
+      drawBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ============================================
+    // SÉQUENCE D'ANIMATION DU TIRAGE
+    // Phase 1: Spin (machine à sous)
+    // Phase 2: Révélation de chaque gagnant
+    // ============================================
+    async function lancerTirage() {
+      const overlay = document.getElementById('animationOverlay');
+      const phaseSpin = document.getElementById('phaseSpin');
+      const phaseReveal = document.getElementById('phaseReveal');
+
+      overlay.classList.add('active');
+
+      // Phase 1: Animation de tirage en cours (3s)
+      phaseSpin.classList.add('active');
+      await sleep(3000);
+      phaseSpin.classList.remove('active');
+
+      // Effectuer le tirage
+      winners = tirerGagnants(participants, 3);
+
+      // Générer l'empreinte SHA-256 de vérification
+      computeAndDisplayProof();
+
+      // Phase 2: Révéler chaque gagnant (1s chacun)
+      const badges = ['🥇', '🥈', '🥉'];
+      const titles = ['Premier gagnant', 'Deuxième gagnant', 'Troisième gagnant'];
+
+      for (let i = 0; i < 3; i++) {
+        const winner = winners[i];
+        
+        // Créer les particules
+        createParticles();
+        
+        document.getElementById('revealTitle').textContent = badges[i] + ' ' + titles[i];
+        document.getElementById('revealWinner').textContent = winner.prenom;
+        document.getElementById('revealEmail').textContent = masquerEmail(winner.email);
+        
+        phaseReveal.classList.add('active');
+        await sleep(1500);
+        phaseReveal.classList.remove('active');
+      }
+
+      overlay.classList.remove('active');
+
+      // Afficher les winners
+      afficherGagnants();
+    }
+
+    // ============================================
+    // CRÉATION DES PARTICULES
+    // ============================================
+    function createParticles() {
+      const container = document.getElementById('particlesBurst');
+      container.innerHTML = '';
+      
+      const colors = ['#E5A835', '#F5E6C8', '#FFD700', '#FFA500'];
+      
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.left = '50%';
+        particle.style.top = '40%';
+        
+        const angle = (Math.PI * 2 / 20) * i;
+        const distance = 100 + Math.random() * 100;
+        particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+        particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+        
+        container.appendChild(particle);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // ============================================
+    // HASH SHA-256 DE VÉRIFICATION (PROOF)
+    // Calcule et affiche une empreinte sur :
+    // CSV brut + gagnants ordonnés + timestamp ISO
+    // ============================================
+    async function computeAndDisplayProof() {
+      // Générer le contenu de preuve
+      const winnersList = winners
+        .map((w, i) => `${i + 1}. ${w.prenom} <${w.email}>`)
+        .join('\n');
+      const now = new Date();
+      const dataToHash = '\n--- TIMESTAMP ---\n' + now.toISOString()
+                      + '\n--- GAGNANTS ---\n' + winnersList
+                      + '--- FICHIER CSV ---\n' + rawCSVContent.trim();
+
+      // Calcul du hash
+      const encoder = new TextEncoder();
+      const data = encoder.encode(dataToHash);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      // Affichage du hash
+      const proofSection = document.getElementById('proofHash');
+      proofSection.textContent = hexHash;
+
+      // Téléchargement automatique de la preuve
+      const blob = new Blob([dataToHash], { type: 'text/plain;charset=utf-8' });
+      const link = document.createElement('a');
+      const filename = `preuve-tirage-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}.txt`;
+
+      link.setAttribute('href', URL.createObjectURL(blob));
+      link.setAttribute('download', filename);
+      link.style.display = 'none';
+
+      document.body.appendChild(link);
+      await sleep(6000);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ============================================
+    // AFFICHAGE DES GAGNANTS
+    // ============================================
+    function afficherGagnants() {
+      const grid = document.getElementById('winnersGrid');
+      const section = document.getElementById('winnersSection');
+      const resetSection = document.getElementById('resetSection');
+
+      grid.innerHTML = '';
+
+      const badges = ['🥇', '🥈', '🥉'];
+      
+      winners.forEach((winner, i) => {
+        const card = document.createElement('div');
+        card.className = 'winner-card';
+        card.style.animationDelay = (i * 0.2) + 's';
+        card.innerHTML = `
+          <span class="winner-badge">${badges[i]}</span>
+          <p class="winner-name">${winner.prenom}</p>
+          <p class="winner-email">${masquerEmail(winner.email)}</p>
+          <p class="winner-tickets">${winner.tickets} ticket${winner.tickets > 1 ? 's' : ''}</p>
+        `;
+        grid.appendChild(card);
+      });
+
+      section.classList.add('visible');
+      resetSection.classList.add('visible');
+
+      // Scroll vers les winners
+      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ============================================
+    // BOUTON TIRAGE
+    // ============================================
+    document.getElementById('drawBtn').addEventListener('click', () => {
+      if (participants.length >= 3) {
+        lancerTirage();
+      } else {
+        csvError.textContent = 'Il faut au moins 3 participants pour effectuer un tirage.';
+        csvError.classList.add('visible');
+      }
+    });
+
+    // ============================================
+    // BOUTON RESET
+    // ============================================
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      // Cacher les winners
+      document.getElementById('winnersSection').classList.remove('visible');
+      document.getElementById('resetSection').classList.remove('visible');
+
+      // Réinitialiser
+      winners = [];
+      participants = [];
+
+      // Cacher dashboard et preview
+      document.getElementById('dashboard').classList.remove('visible');
+      document.getElementById('previewTable').classList.remove('visible');
+
+      // Désactiver le bouton
+      const drawBtn = document.getElementById('drawBtn');
+      drawBtn.disabled = true;
+      document.getElementById('drawHint').textContent = "Importez d'abord un fichier CSV";
+
+      // Reset file input
+      document.getElementById('fileInput').value = '';
+
+      // Scroll vers le haut
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ============================================
+    // INITIALISATION
+    // ============================================
+    generateBackground();
+  </script>
+</body>
+</html>
